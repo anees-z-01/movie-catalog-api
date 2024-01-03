@@ -12,7 +12,7 @@ interface MulterRequest extends ExpressRequest {
 
 const movieRouter = express.Router();
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024, files: 1 } });
 
 movieRouter.post('/movies', authMiddleware, upload.single('image'), async (req: MulterRequest, res: Response) => {
   try {
@@ -45,10 +45,10 @@ movieRouter.get('/movies', authMiddleware, async (req: MulterRequest, res: Respo
     const rawPage = req.query.page as string | undefined;
     const rawPageSize = req.query.pageSize as string | undefined;
 
-    const page = rawPage !== undefined ? parseInt(rawPage, 10) : 1;
-    const pageSize = rawPageSize !== undefined ? parseInt(rawPageSize, 10) : 10;
+    const page = rawPage !== undefined ? Number(rawPage) : 1;
+    const pageSize = rawPageSize !== undefined ? Number(rawPageSize) : 10;
 
-    if (Number.isNaN(page) || Number.isNaN(pageSize) || page < 1 || pageSize < 1) {
+    if (!Number.isInteger(page) || !Number.isInteger(pageSize) || page < 1 || pageSize < 1 || pageSize > 100 || page > 100000) {
       return res.status(400).json({ message: 'Invalid pagination parameters' });
     }
 
